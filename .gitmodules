@@ -4,3 +4,6 @@
 [submodule "pagopa_frontend"]
 	path = pagopa_frontend
 	url = https://github.com/gsarago/pagopa_frontend
+[submodule ".vscode"]
+	path = .vscode
+	url = https://github.com/fvecchio222/.vscode.git
