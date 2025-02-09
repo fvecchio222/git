@@ -1,0 +1,6 @@
+[submodule "pagopa_backend"]
+	path = pagopa_backend
+	url = https://github.com/gsarago/pagopa_backend
+[submodule "pagopa_frontend"]
+	path = pagopa_frontend
+	url = https://github.com/gsarago/pagopa_frontend
