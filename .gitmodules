@@ -7,6 +7,4 @@
 [submodule ".vscode"]
 	path = .vscode
 	url = https://github.com/fvecchio222/.vscode.git
-[submodule "WyrmrestProject"]
-	path = WyrmrestProject
-	url = https://github.com/Rhaegal222/WyrmrestProject.git
+
