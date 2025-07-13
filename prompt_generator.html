@@ -1,480 +1,753 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generatore Prompt Refactoring Laravel</title>
-  <style>
-        /* --- TEMA LIGHT (DEFAULT) --- */
-        :root {
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
-            --card-bg-color: #ffffff;
-            --border-color: #dee2e6;
-            --border-color-dashed: #ced4da;
-            --button-bg-color: #0d6efd;
-            --button-hover-bg-color: #0b5ed7;
-            --button-danger-bg-color: #dc3545;
-            --button-danger-hover-bg-color: #c82333;
-            --link-color: #0d6efd;
-            --file-info-color: #6c757d;
-            --output-bg-color: #e9ecef;
-        }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generatore Prompt Refactoring Laravel</title>
+    <style>
+      /* --- TEMA LIGHT (DEFAULT) --- */
+      :root {
+        --bg-color: #f8f9fa;
+        --text-color: #212529;
+        --card-bg-color: #ffffff;
+        --border-color: #dee2e6;
+        --border-color-dashed: #ced4da;
+        --button-bg-color: #0d6efd;
+        --button-hover-bg-color: #0b5ed7;
+        --button-danger-bg-color: #dc3545;
+        --button-danger-hover-bg-color: #c82333;
+        --button-success-bg-color: #198754;
+        --button-success-hover-bg-color: #157347;
+        --link-color: #0d6efd;
+        --file-info-color: #6c757d;
+        --output-bg-color: #e9ecef;
+        --warning-bg-color: #fff3cd;
+        --warning-border-color: #ffeaa7;
+        --warning-text-color: #856404;
+      }
 
-        /* --- TEMA DARK --- */
-        body[data-theme="dark"] {
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --card-bg-color: #1e1e1e;
-            --border-color: #444444;
-            --border-color-dashed: #555555;
-            --button-bg-color: #0d6efd;
-            --button-hover-bg-color: #3385fd;
-            --button-danger-bg-color: #dc3545;
-            --button-danger-hover-bg-color: #ff4757;
-            --link-color: #3385fd;
-            --file-info-color: #999999;
-            --output-bg-color: #2c2c2c;
-        }
+      /* --- TEMA DARK --- */
+      body[data-theme="dark"] {
+        --bg-color: #121212;
+        --text-color: #e0e0e0;
+        --card-bg-color: #1e1e1e;
+        --border-color: #444444;
+        --border-color-dashed: #555555;
+        --button-bg-color: #0d6efd;
+        --button-hover-bg-color: #3385fd;
+        --button-danger-bg-color: #dc3545;
+        --button-danger-hover-bg-color: #ff4757;
+        --button-success-bg-color: #198754;
+        --button-success-hover-bg-color: #20c997;
+        --link-color: #3385fd;
+        --file-info-color: #999999;
+        --output-bg-color: #2c2c2c;
+        --warning-bg-color: #332701;
+        --warning-border-color: #664d03;
+        --warning-text-color: #ffecb3;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0 auto;
-            max-width: 900px;
-            padding: 20px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.2s, color 0.2s;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0 auto;
+        max-width: 900px;
+        padding: 20px;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.2s, color 0.2s;
+      }
 
-        h1, h2 {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-        
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+      h1,
+      h2 {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+      }
 
-        #theme-toggle {
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg-color);
-            color: var(--text-color);
-            cursor: pointer;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        #theme-toggle:hover {
-            transform: scale(1.1);
-        }
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
 
-        .step {
-            margin-bottom: 25px;
-            background-color: var(--card-bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 2px dashed var(--border-color-dashed);
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-        .step.drop-zone--over {
-            border-color: var(--button-bg-color);
-            background-color: rgba(13, 110, 253, 0.1);
-        }
-        
-        .step-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .clear-btn {
-            background-color: var(--button-danger-bg-color);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background-color 0.2s;
-        }
-        .clear-btn:hover {
-            background-color: var(--button-danger-hover-bg-color);
-        }
-        
-        label { 
-            font-weight: bold; 
-            display: block; 
-            margin-bottom: 8px; 
-        }
-        
-        textarea {
-            width: 100%;
-            min-height: 150px;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            font-family: "Courier New", Courier, monospace;
-            font-size: 14px;
-            box-sizing: border-box;
-            background-color: var(--output-bg-color);
-            color: var(--text-color);
-        }
-        
-        button#generateBtn {
-            background-color: var(--button-bg-color);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
-        }
-        button#generateBtn:hover { 
-            background-color: var(--button-hover-bg-color); 
-        }
-        
-        #output-container { 
-            margin-top: 30px; 
-        }
-        
-        .file-info {
-            font-style: italic;
-            color: var(--file-info-color);
-            margin-top: 10px;
-        }
-        
-        .file-list {
-            margin-top: 10px;
-        }
-        
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .file-item:last-child {
-            border-bottom: none;
-        }
-        
-        .file-name {
-            font-weight: bold;
-            color: var(--text-color);
-        }
-        
-        .remove-file-btn {
-            background-color: var(--button-danger-bg-color);
-            color: white;
-            border: none;
-            padding: 2px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-        
-        .remove-file-btn:hover {
-            background-color: var(--button-danger-hover-bg-color);
-        }
-        
-        a {
-            color: var(--link-color);
-        }
+      .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      #theme-toggle {
+        border: 1px solid var(--border-color);
+        background-color: var(--card-bg-color);
+        color: var(--text-color);
+        cursor: pointer;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        transition: background-color 0.2s, transform 0.2s;
+      }
+      #theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      .file-input-btn {
+        background-color: var(--button-success-bg-color);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background-color 0.2s;
+      }
+      .file-input-btn:hover {
+        background-color: var(--button-success-hover-bg-color);
+      }
+
+      .step {
+        margin-bottom: 25px;
+        background-color: var(--card-bg-color);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 2px dashed var(--border-color-dashed);
+        transition: background-color 0.2s, border-color 0.2s;
+      }
+      .step.drop-zone--over {
+        border-color: var(--button-bg-color);
+        background-color: rgba(13, 110, 253, 0.1);
+      }
+
+      .step-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .step-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .clear-btn {
+        background-color: var(--button-danger-bg-color);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background-color 0.2s;
+      }
+      .clear-btn:hover {
+        background-color: var(--button-danger-hover-bg-color);
+      }
+
+      .warning-box {
+        background-color: var(--warning-bg-color);
+        border: 1px solid var(--warning-border-color);
+        border-radius: 4px;
+        padding: 12px;
+        margin: 10px 0;
+        color: var(--warning-text-color);
+        font-size: 14px;
+      }
+
+      .instructions {
+        background-color: var(--output-bg-color);
+        border-radius: 4px;
+        padding: 15px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre-line;
+        border-left: 4px solid var(--button-bg-color);
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px;
+        box-sizing: border-box;
+        background-color: var(--output-bg-color);
+        color: var(--text-color);
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      button#generateBtn {
+        background-color: var(--button-bg-color);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+        display: block;
+        margin: 20px auto;
+      }
+      button#generateBtn:hover {
+        background-color: var(--button-hover-bg-color);
+      }
+
+      #output-container {
+        margin-top: 30px;
+      }
+
+      .file-info {
+        font-style: italic;
+        color: var(--file-info-color);
+        margin-top: 10px;
+      }
+
+      .file-list {
+        margin-top: 10px;
+      }
+
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .file-item:last-child {
+        border-bottom: none;
+      }
+
+      .file-name {
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      .remove-file-btn {
+        background-color: var(--button-danger-bg-color);
+        color: white;
+        border: none;
+        padding: 2px 6px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+
+      .remove-file-btn:hover {
+        background-color: var(--button-danger-hover-bg-color);
+      }
+
+      a {
+        color: var(--link-color);
+      }
+
+      .copy-btn {
+        background-color: var(--button-bg-color);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 10px;
+        transition: background-color 0.2s;
+      }
+      .copy-btn:hover {
+        background-color: var(--button-hover-bg-color);
+      }
+
+      .copy-btn.copied {
+        background-color: var(--button-success-bg-color);
+      }
+
+      .tips-box {
+        background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+        border-left: 4px solid var(--button-bg-color);
+      }
+
+      .tips-box h3 {
+        margin-top: 0;
+        color: var(--button-bg-color);
+      }
+
+      .tips-box ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+
+      .tips-box li {
+        margin: 8px 0;
+      }
     </style>
-</head>
-<body>
-
-  <div class="header-container">
+  </head>
+  <body>
+    <div class="header-container">
       <h1>Generatore di Prompt per Refactoring</h1>
-      <button id="theme-toggle" title="Cambia tema">🌙</button>
-  </div>
-
-  <div class="step">
-    <div class="step-header">
-      <h2>Passo 1: Inserisci il Controller</h2>
-      <button class="clear-btn" onclick="clearSection('controllerCode')">Cancella</button>
+      <div class="header-actions">
+        <button id="theme-toggle" title="Cambia tema">🌙</button>
+      </div>
     </div>
-    <label for="controllerCode">Codice sorgente di `App\Http\Controllers\<Nome>Controller.php`</label>
-    <textarea id="controllerCode" placeholder="Trascina il file del Controller qui..."></textarea>
-    <p class="file-info" id="controllerInfo"></p>
-  </div>
 
-  <div class="step">
-    <div class="step-header">
-      <h2>Passo 2: Inserisci il Model Principale</h2>
-      <button class="clear-btn" onclick="clearSection('modelCode')">Cancella</button>
+    <div class="tips-box">
+      <h3>💡 Suggerimenti per l'uso</h3>
+      <ul>
+        <li>
+          <strong>Drag & Drop:</strong>
+          Trascina i file direttamente dall'Esplora Risorse/Finder nelle aree sottostanti
+        </li>
+        <li>
+          <strong>VSCode:</strong>
+          Se trascini da VSCode, seguirà le istruzioni per copiare/incollare il contenuto
+        </li>
+        <li>
+          <strong>Multipli file:</strong>
+          Nella sezione 3 puoi trascinare più file contemporaneamente
+        </li>
+        <li>
+          <strong>Copia/Incolla:</strong>
+          Puoi anche incollare direttamente il codice nelle textarea
+        </li>
+        <li>
+          <strong>File Button:</strong>
+          Usa il pulsante "Scegli File" come alternativa al drag & drop
+        </li>
+      </ul>
     </div>
-    <label for="modelCode">Codice sorgente di `App\Models\<Nome>.php`</label>
-    <textarea id="modelCode" placeholder="Trascina il file del Model qui..."></textarea>
-    <p class="file-info" id="modelInfo"></p>
-  </div>
 
-  <div class="step" id="multi-file-step">
-    <div class="step-header">
-      <h2>Passo 3: Inserisci Model o Service Correlati (Opzionale)</h2>
-      <button class="clear-btn" onclick="clearSection('relatedCode')">Cancella</button>
+    <div class="step">
+      <div class="step-header">
+        <h2>Passo 1: Inserisci il Controller</h2>
+        <div class="step-actions">
+          <div class="file-input-wrapper">
+            <button class="file-input-btn" onclick="document.getElementById('controllerFile').click()">Scegli File</button>
+            <input type="file" id="controllerFile" accept=".php,.txt" style="display: none" />
+          </div>
+          <button class="clear-btn" onclick="clearSection('controllerCode')">Cancella</button>
+        </div>
+      </div>
+      <label for="controllerCode">Codice sorgente di `App\Http\Controllers\&gt;Nome&gt;Controller.php`</label>
+      <textarea id="controllerCode" placeholder="Trascina il file del Controller qui o usa il pulsante 'Scegli File'..."></textarea>
+      <p class="file-info" id="controllerInfo"></p>
     </div>
-    <label for="relatedCode">Codice di eventuali altri Model o Service rilevanti</label>
-    <textarea id="relatedCode" placeholder="Trascina uno o più file correlati qui..."></textarea>
-    <div class="file-list" id="relatedFileList"></div>
-    <p class="file-info" id="relatedInfo"></p>
-  </div>
 
-  <button id="generateBtn">Genera Prompt JSON</button>
+    <div class="step">
+      <div class="step-header">
+        <h2>Passo 2: Inserisci il Model Principale</h2>
+        <div class="step-actions">
+          <div class="file-input-wrapper">
+            <button class="file-input-btn" onclick="document.getElementById('modelFile').click()">Scegli File</button>
+            <input type="file" id="modelFile" accept=".php,.txt" style="display: none" />
+          </div>
+          <button class="clear-btn" onclick="clearSection('modelCode')">Cancella</button>
+        </div>
+      </div>
+      <label for="modelCode">Codice sorgente di `App\Models\&lt;Nome&gt;.php`</label>
+      <textarea id="modelCode" placeholder="Trascina il file del Model qui o usa il pulsante 'Scegli File'..."></textarea>
+      <p class="file-info" id="modelInfo"></p>
+    </div>
 
-  <div id="output-container" style="display:none;">
-    <h2>📝 Prompt Generato</h2>
-    <p>Copia il JSON sottostante o <a href="#" id="downloadLink">scarica il file .json</a>.</p>
-    <textarea id="outputJson" readonly></textarea>
-  </div>
+    <div class="step" id="multi-file-step">
+      <div class="step-header">
+        <h2>Passo 3: Inserisci Model o Service Correlati (Opzionale)</h2>
+        <div class="step-actions">
+          <div class="file-input-wrapper">
+            <button class="file-input-btn" onclick="document.getElementById('relatedFiles').click()">Scegli File</button>
+            <input type="file" id="relatedFiles" accept=".php,.txt" multiple style="display: none" />
+          </div>
+          <button class="clear-btn" onclick="clearSection('relatedCode')">Cancella</button>
+        </div>
+      </div>
+      <label for="relatedCode">Codice di eventuali altri Model o Service rilevanti</label>
+      <textarea id="relatedCode" placeholder="Trascina uno o più file correlati qui o usa il pulsante 'Scegli File'..."></textarea>
+      <div class="file-list" id="relatedFileList"></div>
+      <p class="file-info" id="relatedInfo"></p>
+    </div>
 
-<script>
-  // --- INIZIO LOGICA TEMA ---
-    const themeToggle = document.getElementById('theme-toggle');
+    <button id="generateBtn">Genera Prompt JSON</button>
 
-    const setTheme = (theme) => {
-        if (theme === 'dark') {
-            document.body.dataset.theme = 'dark';
-            themeToggle.textContent = '☀️';
+    <div id="output-container" style="display: none">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h2>📝 Prompt Generato</h2>
+        <button class="copy-btn" id="copyBtn">Copia JSON</button>
+      </div>
+      <p>
+        Copia il JSON sottostante o
+        <a href="#" id="downloadLink">scarica il file .json</a>
+        .
+      </p>
+      <textarea id="outputJson" readonly></textarea>
+    </div>
+
+    <script>
+      // --- INIZIO LOGICA TEMA ---
+      const themeToggle = document.getElementById("theme-toggle");
+
+      const setTheme = (theme) => {
+        if (theme === "dark") {
+          document.body.dataset.theme = "dark";
+          themeToggle.textContent = "☀️";
         } else {
-            document.body.removeAttribute('data-theme');
-            themeToggle.textContent = '🌙';
+          document.body.removeAttribute("data-theme");
+          themeToggle.textContent = "🌙";
         }
-    };
+      };
 
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-        if (typeof(Storage) !== "undefined") {
-            localStorage.setItem('theme', currentTheme);
-        }
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
         setTheme(currentTheme);
-    });
+      });
 
-    // Imposta il tema al caricamento della pagina
-    let savedTheme = null;
-    if (typeof(Storage) !== "undefined") {
-        savedTheme = localStorage.getItem('theme');
-    }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme) {
-        setTheme(savedTheme);
-    } else if (prefersDark) {
-        setTheme('dark');
-    }
-    // --- FINE LOGICA TEMA ---
-    
-    // Variabile per tracciare i file caricati nella sezione 3
-    let relatedFiles = [];
-    
-    // Funzione per cancellare una sezione
-    function clearSection(textareaId) {
+      // Imposta il tema al caricamento della pagina
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) {
+        setTheme("dark");
+      }
+      // --- FINE LOGICA TEMA ---
+
+      // Variabile per tracciare i file caricati nella sezione 3
+      let relatedFiles = [];
+
+      // Funzione per cancellare una sezione
+      function clearSection(textareaId) {
         const textarea = document.getElementById(textareaId);
-        textarea.value = '';
-        
+        textarea.value = "";
+
         // Cancella anche le informazioni sui file
-        if (textareaId === 'controllerCode') {
-            document.getElementById('controllerInfo').textContent = '';
-        } else if (textareaId === 'modelCode') {
-            document.getElementById('modelInfo').textContent = '';
-        } else if (textareaId === 'relatedCode') {
-            relatedFiles = [];
-            document.getElementById('relatedInfo').textContent = '';
-            document.getElementById('relatedFileList').innerHTML = '';
+        if (textareaId === "controllerCode") {
+          document.getElementById("controllerInfo").textContent = "";
+        } else if (textareaId === "modelCode") {
+          document.getElementById("modelInfo").textContent = "";
+        } else if (textareaId === "relatedCode") {
+          relatedFiles = [];
+          document.getElementById("relatedInfo").textContent = "";
+          document.getElementById("relatedFileList").innerHTML = "";
         }
-    }
-    
-    // Funzione per rimuovere un file specifico dalla sezione 3
-    function removeRelatedFile(index) {
+      }
+
+      // Funzione per rimuovere un file specifico dalla sezione 3
+      function removeRelatedFile(index) {
         relatedFiles.splice(index, 1);
         updateRelatedSection();
-    }
-    
-    // Funzione per aggiornare la sezione 3
-    function updateRelatedSection() {
-        const textarea = document.getElementById('relatedCode');
-        const fileList = document.getElementById('relatedFileList');
-        const fileInfo = document.getElementById('relatedInfo');
-        
+      }
+
+      // Funzione per aggiornare la sezione 3
+      function updateRelatedSection() {
+        const textarea = document.getElementById("relatedCode");
+        const fileList = document.getElementById("relatedFileList");
+        const fileInfo = document.getElementById("relatedInfo");
+
         if (relatedFiles.length === 0) {
-            textarea.value = '';
-            fileList.innerHTML = '';
-            fileInfo.textContent = '';
-            return;
+          textarea.value = "";
+          fileList.innerHTML = "";
+          fileInfo.textContent = "";
+          return;
         }
-        
+
         // Aggiorna il contenuto della textarea
-        const allText = relatedFiles.map(file => `${file.content}\n\n// ${file.name}`).join('\n\n\n');
+        const allText = relatedFiles.map((file) => `${file.content}\n\n// ${file.name}`).join("\n\n\n");
         textarea.value = allText;
-        
+
         // Aggiorna la lista dei file
-        fileList.innerHTML = relatedFiles.map((file, index) => `
+        fileList.innerHTML = relatedFiles
+          .map(
+            (file, index) => `
             <div class="file-item">
                 <span class="file-name">${file.name}</span>
                 <button class="remove-file-btn" onclick="removeRelatedFile(${index})">Rimuovi</button>
             </div>
-        `).join('');
-        
+        `
+          )
+          .join("");
+
         // Aggiorna le informazioni
-        const fileNames = relatedFiles.map(file => file.name).join(', ');
+        const fileNames = relatedFiles.map((file) => file.name).join(", ");
         fileInfo.textContent = `File caricati: ${fileNames}`;
-    }
-    
-  document.querySelectorAll('.step').forEach(dropZone => {
-  const textarea = dropZone.querySelector('textarea');
-  const fileInfo = dropZone.querySelector('.file-info');
-
-  dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.classList.add('drop-zone--over');
-  });
-  ['dragleave','dragend'].forEach(evt =>
-    dropZone.addEventListener(evt, () => dropZone.classList.remove('drop-zone--over'))
-  );
-
-  dropZone.addEventListener('drop', async e => {
-    e.preventDefault();
-    dropZone.classList.remove('drop-zone--over');
-
-    // 1) Provo a leggere veri File (Explorer, Finder…)
-    const files = Array.from(e.dataTransfer.items)
-      .filter(i => i.kind === 'file')
-      .map(i => i.getAsFile())
-      .filter(f => f);
-
-    if (files.length) {
-      // ––––––––– singolo o multi-file come prima –––––––––
-      if (dropZone.id === 'multi-file-step') {
-        const contents = await Promise.all(files.map(f =>
-          new Promise(res => {
-            const r = new FileReader();
-            r.onload = () => res({ name: f.name, content: r.result });
-            r.readAsText(f);
-          })
-        ));
-        relatedFiles = relatedFiles.concat(contents);
-        updateRelatedSection();
-      } else {
-        const f = files[0];
-        const r = new FileReader();
-        r.onload = () => {
-          textarea.value = r.result;
-          fileInfo.textContent = `File caricato: ${f.name}`;
-        };
-        r.readAsText(f);
       }
-      return;
-    }
 
-    // 2) Fallback per VSCode drag→ ottengo uri
-    const uriData = e.dataTransfer.getData('text/uri-list');
-    if (uriData) {
-      const uri = uriData.split('\n')[0];
-      try {
-        const res = await fetch(uri);
-        const text = await res.text();
-        textarea.value = text;
-        const name = decodeURIComponent(uri.substring(uri.lastIndexOf('/')+1));
-        fileInfo.textContent = `File caricato da VSCode: ${name}`;
-      } catch {
-        fileInfo.textContent = 
-          'Impossibile leggere il file via fetch. Servi la pagina con un server HTTP locale o trascina dal File Explorer.';
+      // Funzione per creare istruzioni VSCode
+      function createVSCodeInstructions(fileName) {
+        return `⚠️ File da VSCode rilevato: ${fileName}
+
+Per utilizzare questo file, hai due opzioni:
+
+OPZIONE 1 - Copia/Incolla:
+1. Apri il file in VSCode
+2. Seleziona tutto il contenuto (Ctrl+A / Cmd+A)
+3. Copia il contenuto (Ctrl+C / Cmd+C)
+4. Incolla qui sotto (Ctrl+V / Cmd+V)
+
+OPZIONE 2 - Drag & Drop dall'Esplora:
+1. Vai all'Esplora Risorse/Finder
+2. Trova il file ${fileName}
+3. Trascinalo direttamente in questa area
+
+Oppure usa il pulsante "Scegli File" sopra.`;
       }
-    }
-  });
-});
 
-    const controllerInput = document.getElementById('controllerCode');
-    const modelInput = document.getElementById('modelCode');
-    const relatedInput = document.getElementById('relatedCode');
-    const generateBtn = document.getElementById('generateBtn');
-    const outputContainer = document.getElementById('output-container');
-    const outputJson = document.getElementById('outputJson');
-    const downloadLink = document.getElementById('downloadLink');
+      // Funzione per gestire il caricamento dei file
+      function handleFileLoad(files, targetTextarea, targetInfo, isMultiple = false) {
+        if (files.length === 0) return;
 
-    function generateJSON() {
-        const promptData = {
-            title: "Prompt per il Refactoring di un Controller Laravel",
-            description: "Utilizza questo template per richiedere il refactoring di un controller Laravel \"fat\". Inserisci il codice sorgente nelle sezioni apposite e l'AI seguirà le linee guida per produrre un'architettura pulita, testabile e manutenibile.",
-            sourceCode: {
-                controller: controllerInput.value.trim() || '<?php // Codice del controller non fornito ?>',
-                mainModel: modelInput.value.trim() || '<?php // Codice del model non fornito ?>',
-                relatedCode: relatedInput.value.trim() || '<?php // Nessun codice correlato fornito ?>'
-            },
-            guidelines: {
-                formRequest: [
-                    "Estrai tutta la validazione in classi dedicate: App\\Http\\Requests\\<Controller>\\<ActionName>Request",
-                    "Per le richieste di elenchi (index), estendi PaginatedRequest se hai bisogno di aggiungere filtri di ricerca (es. term, status)",
-                    "Nei metodi del controller, i dati di input devono provenire solo dal FormRequest appropriato"
-                ],
-                serviceStatico: [
-                    "Crea una classe App\\Services\\<Controller>Service con metodi statici",
-                    "Ogni metodo deve incapsulare una singola unità di lavoro (es. list, store, update), gestire le transazioni (DB::transaction) e contenere tutta la logica di business",
-                    "I metodi del Service devono accettare parametri primitivi o DTO, mai l'oggetto Request",
-                    "Service Esterni: Se la logica di business interagisce con altri Controller (es. new AltroController()), sostituisci queste chiamate con chiamate a un AltroService. Se tale service non esiste ancora, lascia un commento // TODO: Implementare o verificare AltroService::metodo() per segnalare la dipendenza",
-                    "Il service deve restituire modelli Eloquent, collezioni, LengthAwarePaginator (da ->paginate()), DTO o valori primitivi"
-                ],
-                controllerSlim: [
-                    "I metodi del controller devono solo iniettare i FormRequest e i parametri di rotta tipizzati (es. int $id)",
-                    "Ogni metodo deve contenere una singola chiamata al Service e non avere logica aggiuntiva",
-                    "Utilizza solo le classi ResultResponse e ErrorResponse per le risposte JSON, passando i dati attraverso le API Resource"
-                ],
-                paginazione: [
-                    "Sostituisci qualsiasi implementazione di paginazione manuale con il metodo nativo di Eloquent ->paginate($request->pageSize()), da usare all'interno del Service"
-                ],
-                risorseDataObjects: [
-                    "Per ogni entità restituita, crea una App\\Http\\Resources\\<Model>Resource",
-                    "Se pertinente, crea un App\\Data\\<Model>\\<Model>Data usando Spatie/Laravel-Data",
-                    "Usa le Resource per formattare l'output JSON in modo coerente"
-                ],
-                elencoClassi: [
-                    "Alla fine dell'output, fornisci un elenco completo di tutte le classi nuove o modificate durante il refactoring"
-                ],
-                spiegazione: [
-                    "Concludi con una breve spiegazione delle decisioni architetturali prese e dei benefici ottenuti"
-                ]
-            },
-            output_format: {
-              mode: "separate_files",
-              description: "Genera il codice rifattorizzato come una collezione di file completi e separati. Ogni file deve includere il namespace corretto, la definizione della classe e tutte le dichiarazioni `use` necessarie. Non usare blocchi di markdown per il codice, ma fornisci il contenuto grezzo per ogni file.",
-              file_structure_example: [
-                "app/Http/Controllers/UserController.php",
-                "app/Services/UserService.php",
-                "app/Http/Requests/User/StoreUserRequest.php",
-                "app/Http/Resources/UserResource.php",
-                "...",
-              ],
-            },
-            supportClasses: {
-                paginatedRequest: "<?php\n\nnamespace App\\Http\\Requests;\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\nclass PaginatedRequest extends FormRequest\n{\n    public function authorize(): bool { return true; }\n\n    public function rules(): array\n    {\n        return [\n            'page'      => 'sometimes|integer|min:1',\n            'page_size' => 'sometimes|integer|min:1',\n        ];\n    }\n\n    public function page(): int { return (int) $this->input('page', 1); }\n\n    public function pageSize(): int { return (int) $this->input('page_size', 15); }\n}",
-                resultResponse: "<?php\n\nnamespace App\\Http\\Responses;\n\nuse Illuminate\\Contracts\\Support\\Responsable;\nuse Illuminate\\Http\\JsonResponse;\nuse Symfony\\Component\\HttpFoundation\\Response;\n\nclass ResultResponse implements Responsable\n{\n    public function __construct(\n        public readonly string $message = 'OK',\n        public readonly mixed $data = null,\n        public readonly int $status = JsonResponse::HTTP_OK,\n    ) {}\n\n    public function toResponse($request): Response\n    {\n        $payload = ['message' => $this->message];\n        if (!is_null($this->data)) {\n            $payload['data'] = $this->data;\n        }\n        return new JsonResponse(data: $payload, status: $this->status);\n    }\n}",
-                errorResponse: "<?php\n\nnamespace App\\Http\\Responses;\n\nuse Illuminate\\Contracts\\Support\\Responsable;\nuse Illuminate\\Http\\JsonResponse;\nuse Symfony\\Component\\HttpFoundation\\Response;\n\nclass ErrorResponse implements Responsable\n{\n    public function __construct(\n        public readonly string $message = 'Errore di sistema',\n        public readonly int $status = JsonResponse::HTTP_INTERNAL_SERVER_ERROR,\n    ) {}\n\n    public function toResponse($request): Response\n    {\n        return new JsonResponse(\n            data: ['message' => $this->message],\n            status: $this->status,\n        );\n    }\n}"
+        if (isMultiple) {
+          targetInfo.textContent = "Caricamento...";
+          const filePromises = Array.from(files).map((file) => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve({name: file.name, content: reader.result});
+              reader.onerror = () => resolve({name: file.name, content: `// Errore nel caricamento del file ${file.name}`});
+              reader.readAsText(file);
+            });
+          });
+
+          Promise.all(filePromises).then((fileContents) => {
+            relatedFiles = relatedFiles.concat(fileContents);
+            updateRelatedSection();
+          });
+        } else {
+          const file = files[0];
+          targetInfo.textContent = `Caricamento: ${file.name}...`;
+          const reader = new FileReader();
+          reader.onload = () => {
+            targetTextarea.value = reader.result;
+            targetInfo.textContent = `File caricato: ${file.name}`;
+          };
+          reader.onerror = () => {
+            targetTextarea.value = `// Errore nel caricamento del file ${file.name}`;
+            targetInfo.textContent = `Errore nel caricamento: ${file.name}`;
+          };
+          reader.readAsText(file);
+        }
+      }
+
+      // Gestione degli input file
+      document.getElementById("controllerFile").addEventListener("change", (e) => {
+        const textarea = document.getElementById("controllerCode");
+        const info = document.getElementById("controllerInfo");
+        handleFileLoad(e.target.files, textarea, info);
+      });
+
+      document.getElementById("modelFile").addEventListener("change", (e) => {
+        const textarea = document.getElementById("modelCode");
+        const info = document.getElementById("modelInfo");
+        handleFileLoad(e.target.files, textarea, info);
+      });
+
+      document.getElementById("relatedFiles").addEventListener("change", (e) => {
+        const info = document.getElementById("relatedInfo");
+        handleFileLoad(e.target.files, null, info, true);
+      });
+
+      // Gestione drag & drop
+      document.querySelectorAll(".step").forEach((dropZone) => {
+        const textarea = dropZone.querySelector("textarea");
+        const fileInfoId = dropZone.id === "multi-file-step" ? "relatedInfo" : textarea.id === "controllerCode" ? "controllerInfo" : "modelInfo";
+        const fileInfo = document.getElementById(fileInfoId);
+
+        dropZone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropZone.classList.add("drop-zone--over");
+        });
+
+        ["dragleave", "dragend"].forEach((type) => {
+          dropZone.addEventListener(type, () => {
+            dropZone.classList.remove("drop-zone--over");
+          });
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropZone.classList.remove("drop-zone--over");
+
+          const files = e.dataTransfer.files;
+          const textData = e.dataTransfer.getData("text/plain");
+          const uriData = e.dataTransfer.getData("text/uri-list");
+
+          // Gestione per file trascinati da VSCode
+          if (uriData && uriData.startsWith("file://")) {
+            const fileName = uriData.split("/").pop().split("\\").pop();
+            const instruction = createVSCodeInstructions(fileName);
+
+            if (dropZone.id === "multi-file-step") {
+              const newFile = {name: fileName, content: instruction};
+              relatedFiles.push(newFile);
+              updateRelatedSection();
+            } else {
+              textarea.value = instruction;
+              fileInfo.innerHTML = `<div class="warning-box">Rilevato file da VSCode: ${fileName} - Segui le istruzioni sopra</div>`;
             }
+            return;
+          }
+
+          // Gestione per contenuto copiato/incollato
+          if (textData && files.length === 0 && !uriData) {
+            let fileName = "file.php";
+            const classMatch = textData.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
+            if (classMatch) {
+              fileName = classMatch[1] + ".php";
+            }
+
+            if (dropZone.id === "multi-file-step") {
+              const newFile = {name: fileName, content: textData};
+              relatedFiles.push(newFile);
+              updateRelatedSection();
+            } else {
+              textarea.value = textData;
+              fileInfo.textContent = `Contenuto incollato: ${fileName}`;
+            }
+            return;
+          }
+
+          // Gestione normale per file dal file system
+          if (files.length > 0) {
+            handleFileLoad(files, textarea, fileInfo, dropZone.id === "multi-file-step");
+          }
+        });
+      });
+
+      // Funzione per copiare il JSON
+      function copyToClipboard(text) {
+        const copyBtn = document.getElementById("copyBtn");
+
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(() => {
+            copyBtn.textContent = "Copiato!";
+            copyBtn.classList.add("copied");
+            setTimeout(() => {
+              copyBtn.textContent = "Copia JSON";
+              copyBtn.classList.remove("copied");
+            }, 2000);
+          });
+        } else {
+          // Fallback per browser più vecchi
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+
+          copyBtn.textContent = "Copiato!";
+          copyBtn.classList.add("copied");
+          setTimeout(() => {
+            copyBtn.textContent = "Copia JSON";
+            copyBtn.classList.remove("copied");
+          }, 2000);
+        }
+      }
+
+      const controllerInput = document.getElementById("controllerCode");
+      const modelInput = document.getElementById("modelCode");
+      const relatedInput = document.getElementById("relatedCode");
+      const generateBtn = document.getElementById("generateBtn");
+      const outputContainer = document.getElementById("output-container");
+      const outputJson = document.getElementById("outputJson");
+      const downloadLink = document.getElementById("downloadLink");
+      const copyBtn = document.getElementById("copyBtn");
+
+      function generateJSON() {
+        const promptData = {
+          title: "Prompt per il Refactoring di un Controller Laravel",
+          description:
+            "Utilizza questo template per richiedere il refactoring di un controller Laravel \"fat\". Inserisci il codice sorgente nelle sezioni apposite e l'AI seguirà le linee guida per produrre un'architettura pulita, testabile e manutenibile.",
+          sourceCode: {
+            controller: controllerInput.value.trim() || "<?php // Codice del controller non fornito ?>",
+            mainModel: modelInput.value.trim() || "<?php // Codice del model non fornito ?>",
+            relatedCode: relatedInput.value.trim() || "<?php // Nessun codice correlato fornito ?>",
+          },
+          guidelines: {
+            formRequest: [
+              "Estrai tutta la validazione in classi dedicate: App\\Http\\Requests\\<Controller>\\<ActionName>Request",
+              "Per le richieste di elenchi (index), estendi PaginatedRequest se hai bisogno di aggiungere filtri di ricerca (es. term, status)",
+              "Nei metodi del controller, i dati di input devono provenire solo dal FormRequest appropriato",
+            ],
+            serviceStatico: [
+              "Crea una classe App\\Services\\<Controller>Service con metodi statici",
+              "Ogni metodo deve incapsulare una singola unità di lavoro (es. list, store, update), gestire le transazioni (DB::transaction) e contenere tutta la logica di business",
+              "I metodi del Service devono accettare parametri primitivi o DTO, mai l'oggetto Request",
+              "Service Esterni: Se la logica di business interagisce con altri Controller (es. new AltroController()), sostituisci queste chiamate con chiamate a un AltroService. Se tale service non esiste ancora, lascia un commento // TODO: Implementare o verificare AltroService::metodo() per segnalare la dipendenza",
+              "Il service deve restituire modelli Eloquent, collezioni, LengthAwarePaginator (da ->paginate()), DTO o valori primitivi",
+            ],
+            controllerSlim: [
+              "I metodi del controller devono solo iniettare i FormRequest e i parametri di rotta tipizzati (es. int $id)",
+              "Ogni metodo deve contenere una singola chiamata al Service e non avere logica aggiuntiva",
+              "Utilizza solo le classi ResultResponse e ErrorResponse per le risposte JSON, passando i dati attraverso le API Resource",
+            ],
+            paginazione: ["Sostituisci qualsiasi implementazione di paginazione manuale con il metodo nativo di Eloquent ->paginate($request->pageSize()), da usare all'interno del Service"],
+            risorseDataObjects: [
+              "Per ogni entità restituita, crea una App\\Http\\Resources\\<Model>Resource",
+              "Se pertinente, crea un App\\Data\\<Model>\\<Model>Data usando Spatie/Laravel-Data",
+              "Usa le Resource per formattare l'output JSON in modo coerente",
+            ],
+            elencoClassi: ["Alla fine dell'output, fornisci un elenco completo di tutte le classi nuove o modificate durante il refactoring"],
+            spiegazione: ["Concludi con una breve spiegazione delle decisioni architetturali prese e dei benefici ottenuti"],
+          },
+          output_format: {
+            mode: "separate_files",
+            description:
+              "Genera il codice rifattorizzato come una collezione di file completi e separati. Ogni file deve includere il namespace corretto, la definizione della classe e tutte le dichiarazioni `use` necessarie. Non usare blocchi di markdown per il codice, ma fornisci il contenuto grezzo per ogni file.",
+            file_structure_example: [
+              "app/Http/Controllers/UserController.php",
+              "app/Services/UserService.php",
+              "app/Http/Requests/User/StoreUserRequest.php",
+              "app/Http/Resources/UserResource.php",
+              "...",
+            ],
+          },
+          supportClasses: {
+            paginatedRequest:
+              "<?php\n\nnamespace App\\Http\\Requests;\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\nclass PaginatedRequest extends FormRequest\n{\n    public function authorize(): bool { return true; }\n\n    public function rules(): array\n    {\n        return [\n            'page'      => 'sometimes|integer|min:1',\n            'page_size' => 'sometimes|integer|min:1',\n        ];\n    }\n\n    public function page(): int { return (int) $this->input('page', 1); }\n\n    public function pageSize(): int { return (int) $this->input('page_size', 15); }\n}",
+            resultResponse:
+              "<?php\n\nnamespace App\\Http\\Responses;\n\nuse Illuminate\\Contracts\\Support\\Responsable;\nuse Illuminate\\Http\\JsonResponse;\nuse Symfony\\Component\\HttpFoundation\\Response;\n\nclass ResultResponse implements Responsable\n{\n    public function __construct(\n        public readonly string $message = 'OK',\n        public readonly mixed $data = null,\n        public readonly int $status = JsonResponse::HTTP_OK,\n    ) {}\n\n    public function toResponse($request): Response\n    {\n        $payload = ['message' => $this->message];\n        if (!is_null($this->data)) {\n            $payload['data'] = $this->data;\n        }\n        return new JsonResponse(data: $payload, status: $this->status);\n    }\n}",
+            errorResponse:
+              "<?php\n\nnamespace App\\Http\\Responses;\n\nuse Illuminate\\Contracts\\Support\\Responsable;\nuse Illuminate\\Http\\JsonResponse;\nuse Symfony\\Component\\HttpFoundation\\Response;\n\nclass ErrorResponse implements Responsable\n{\n    public function __construct(\n        public readonly string $message = 'Errore di sistema',\n        public readonly int $status = JsonResponse::HTTP_INTERNAL_SERVER_ERROR,\n    ) {}\n\n    public function toResponse($request): Response\n    {\n        return new JsonResponse(\n            data: ['message' => $this->message],\n            status: $this->status,\n        );\n    }\n}",
+          },
         };
 
         return JSON.stringify(promptData, null, 2);
-    }
-    
-    generateBtn.addEventListener('click', () => {
+      }
+
+      generateBtn.addEventListener("click", () => {
         const jsonContent = generateJSON();
         outputJson.value = jsonContent;
-        outputContainer.style.display = 'block';
-        outputJson.style.height = '400px';
+        outputContainer.style.display = "block";
+        outputJson.style.height = "400px";
 
-        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const blob = new Blob([jsonContent], {type: "application/json"});
         downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = 'prompt-refactoring.json';
-    });
-</script>
+        downloadLink.download = "prompt-refactoring.json";
+      });
 
-</body>
+      // Event listener per il pulsante copia
+      copyBtn.addEventListener("click", () => {
+        copyToClipboard(outputJson.value);
+      });
+    </script>
+  </body>
 </html>
