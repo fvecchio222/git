@@ -672,6 +672,149 @@ Oppure usa il pulsante "Scegli File" sopra.`;
       const copyBtn = document.getElementById("copyBtn");
 
       function generateJSON() {
+        const testInstructions = {
+          description: "Una volta che l'AI ha generato i file basandosi su questo prompt, usa le seguenti istruzioni per applicarli direttamente al tuo progetto Laravel e testarli tramite Postman.",
+          laravel_setup: {
+            title: "Fase 1: Configurazione dell'Endpoint in Laravel",
+            steps: [
+              {
+                step: "1. Crea il Controller",
+                description: "Crea un nuovo controller per gestire l'applicazione dei file. Esegui il comando:",
+                code: {
+                  language: "bash",
+                  content: "php artisan make:controller Api/RefactorController",
+                },
+              },
+              {
+                step: "2. Incolla il codice nel Controller",
+                description:
+                  "Sostituisci il contenuto di `app/Http/Controllers/Api/RefactorController.php` con il seguente codice. Questo controller riceve un elenco di file e li scrive nelle posizioni corrette.",
+                code: {
+                  language: "php",
+                  content: `<?php
+
+namespace App\\Http\\Controllers\\Api;
+
+use App\\Http\\Controllers\\Controller;
+use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\File;
+use Illuminate\\Validation\\ValidationException;
+use Illuminate\\Http\\JsonResponse;
+
+class RefactorController extends Controller
+{
+    public function apply(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'required|string',
+            ]);
+
+            $basePath = base_path();
+            $appliedFiles = [];
+            $errors = [];
+
+            foreach ($validated['files'] as $relativePath => $content) {
+                if (str_contains($relativePath, '..')) {
+                    $errors[$relativePath] = 'Path traversal non consentito.';
+                    continue;
+                }
+
+                $fullPath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+                $directory = dirname($fullPath);
+
+                try {
+                    if (!File::isDirectory($directory)) {
+                        File::makeDirectory($directory, 0755, true, true);
+                    }
+                    File::put($fullPath, $content);
+                    $appliedFiles[] = $relativePath;
+                } catch (\\Exception $e) {
+                    $errors[$relativePath] = 'Impossibile scrivere il file: ' . $e->getMessage();
+                }
+            }
+
+            if (!empty($errors)) {
+                return response()->json([
+                    'message' => 'Operazione completata con errori.',
+                    'applied_files' => $appliedFiles,
+                    'errors' => $errors,
+                ], 400);
+            }
+
+            return response()->json([
+                'message' => 'Refactoring applicato con successo.',
+                'applied_files' => $appliedFiles,
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validazione fallita.', 'errors' => $e->errors()], 422);
+        } catch (\\Exception $e) {
+            return response()->json(['message' => 'Errore imprevisto.', 'error' => $e->getMessage()], 500);
+        }
+    }
+}`,
+                },
+              },
+              {
+                step: "3. Aggiungi la rotta API",
+                description: "Aggiungi la seguente rotta al tuo file `routes/api.php`. È protetta da `auth:sanctum`, quindi avrai bisogno di un token di autenticazione valido.",
+                code: {
+                  language: "php",
+                  content: `use App\\Http\\Controllers\\Api\\RefactorController;
+use Illuminate\\Support\\Facades\\Route;
+
+// ... altre rotte
+
+Route::middleware('auth:sanctum')->post('/apply-refactor', [RefactorController::class, 'apply']);`,
+                },
+              },
+            ],
+          },
+          postman_setup: {
+            title: "Fase 2: Configurazione della Richiesta in Postman",
+            steps: [
+              {
+                step: "1. Crea una nuova richiesta POST",
+                description: "Imposta l'URL della richiesta. Sostituisci `{{base_url}}` con l'URL della tua applicazione (es. `http://localhost:8000`).",
+                details: "Metodo: `POST`\nURL: `{{base_url}}/api/apply-refactor`",
+              },
+              {
+                step: "2. Imposta gli Headers",
+                description:
+                  "Vai alla tab 'Headers' e aggiungi le seguenti chiavi come mostrato nell'immagine. `{{auth_token}}` è una variabile di Postman che deve contenere il tuo Bearer Token per l'autenticazione.",
+                details: [
+                  {key: "Accept", value: "application/json"},
+                  {key: "Content-Type", value: "application/json"},
+                  {key: "Authorization", value: "Bearer {{auth_token}}"},
+                ],
+              },
+              {
+                step: "3. Prepara il Body della richiesta",
+                description:
+                  "Vai alla tab 'Body', seleziona 'raw' e scegli 'JSON'. Il corpo deve contenere un oggetto con una chiave `files`, il cui valore è un altro oggetto dove le chiavi sono i percorsi relativi dei file (dalla root del progetto) e i valori sono il contenuto generato dall'AI.",
+                code: {
+                  language: "json",
+                  content: `{
+    "files": {
+        "app/Http/Controllers/RefactoredUserController.php": "<?php\\n\\nnamespace App\\\\Http\\\\Controllers;\\n\\n// ... contenuto del nuovo controller ...\\n",
+        "app/Services/UserService.php": "<?php\\n\\nnamespace App\\\\Services;\\n\\n// ... contenuto del nuovo service ...\\n",
+        "app/Http/Requests/User/StoreUserRequest.php": "<?php\\n\\nnamespace App\\\\Http\\\\Requests\\\\User;\\n\\n// ... contenuto del nuovo form request ...\\n"
+    }
+}`,
+                },
+              },
+              {
+                step: "4. Invia la richiesta",
+                description:
+                  "ATTENZIONE: Questa operazione modifica i file sul tuo disco. Assicurati di avere un backup o di usare un sistema di controllo versione (come Git). Invia la richiesta e, se tutto va a buon fine, riceverai una risposta JSON di successo e i file verranno creati o sovrascritti nel tuo progetto Laravel.",
+              },
+            ],
+          },
+        };
+        // >>> FINE BLOCCO AGGIUNTO <<<
+
         const promptData = {
           title: "Prompt per il Refactoring di un Controller Laravel",
           description:
@@ -720,6 +863,7 @@ Oppure usa il pulsante "Scegli File" sopra.`;
               "...",
             ],
           },
+          test_instructions: testInstructions,
           supportClasses: {
             paginatedRequest:
               "<?php\n\nnamespace App\\Http\\Requests;\n\nuse Illuminate\\Foundation\\Http\\FormRequest;\n\nclass PaginatedRequest extends FormRequest\n{\n    public function authorize(): bool { return true; }\n\n    public function rules(): array\n    {\n        return [\n            'page'      => 'sometimes|integer|min:1',\n            'page_size' => 'sometimes|integer|min:1',\n        ];\n    }\n\n    public function page(): int { return (int) $this->input('page', 1); }\n\n    public function pageSize(): int { return (int) $this->input('page_size', 15); }\n}",
