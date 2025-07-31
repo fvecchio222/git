@@ -10,6 +10,9 @@
 [submodule "kms_app"]
 	path = kms_app
 	url = https://github.com/gsarago/kms_app
+[submodule "kms_backend"]
+	path = kms_backend
+	url = https://github.com/gsarago/kms_backend
 [submodule "CRM"]
 	path = CRM
 	url = https://github.com/gsarago/CRM.git
