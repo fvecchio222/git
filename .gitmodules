@@ -16,3 +16,6 @@
 [submodule "CRM"]
 	path = CRM
 	url = https://github.com/gsarago/CRM.git
+[submodule "wyrmrest"]
+	path = wyrmrest
+	url = https://github.com/Rhaegal222/wyrmrest.git
