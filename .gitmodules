@@ -25,3 +25,9 @@
 [submodule "tirocinio_cullia_backend"]
 	path = tirocinio_cullia_backend
 	url = https://github.com/gsarago/tirocinio_cullia_backend.git
+[submodule "virio_frontend"]
+	path = virio_frontend
+	url = https://github.com/gsarago/virio_frontend.git
+[submodule "virio_backend"]
+	path = virio_backend
+	url = https://github.com/gsarago/virio_backend.git
