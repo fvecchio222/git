@@ -19,12 +19,6 @@
 [submodule "wyrmrest"]
 	path = wyrmrest
 	url = https://github.com/Rhaegal222/wyrmrest.git
-[submodule "tirocinio_cullia"]
-	path = tirocinio_cullia
-	url = https://github.com/gsarago/tirocinio_cullia.git
-[submodule "tirocinio_cullia_backend"]
-	path = tirocinio_cullia_backend
-	url = https://github.com/gsarago/tirocinio_cullia_backend.git
 [submodule "virio_frontend"]
 	path = virio_frontend
 	url = https://github.com/gsarago/virio_frontend.git
