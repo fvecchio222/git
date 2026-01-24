@@ -25,3 +25,9 @@
 [submodule "virio_backend"]
 	path = virio_backend
 	url = https://github.com/gsarago/virio_backend.git
+[submodule "ktourist_backend"]
+	path = ktourist_backend
+	url = https://github.com/gsarago/ktourist_backend.git
+[submodule "ktourist_frontend"]
+	path = ktourist_frontend
+	url = https://github.com/gsarago/ktourist_frontend.git
