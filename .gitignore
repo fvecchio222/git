@@ -54,3 +54,4 @@ android/key.properties.txt
 # Local environment configuration (not committed)
 assets/config/app_config.local.yaml
 .DS_Store
+.opencode

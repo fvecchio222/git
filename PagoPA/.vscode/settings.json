@@ -1,0 +1,12 @@
+{
+  // ==============================
+  // Git: limita il rilevamento a PagoPA
+  // ==============================
+  // Non risalire alle cartelle superiori (evita il repo ombrello ~/Desktop/git)
+  "git.openRepositoryInParentFolders": "never",
+  // Rileva i repository solo nelle sottocartelle di PagoPA (pagopa_backend, pagopa_frontend)
+  "git.autoRepositoryDetection": "subFolders",
+  // Non aggiungere i sottomoduli come repository separati
+  "git.detectSubmodules": false,
+  "git.detectSubmodulesLimit": 0
+}
